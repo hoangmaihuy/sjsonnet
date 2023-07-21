@@ -8,7 +8,7 @@ import scala.util.Try
 import scala.util.control.NonFatal
 
 object SjsonnetMain {
-  def resolveImport(searchRoots0: Seq[Path], allowedInputs: Option[Set[os.Path]] = None) = new Importer {
+  def resolveImport(searchRoots0: Seq[Path], allowedInputs: Option[Set[os.Path]] = None): Importer = new Importer {
     def resolve(docBase: Path, importName: String): Option[Path] =
       (docBase +: searchRoots0)
         .flatMap(base => os.FilePath(importName) match {
@@ -87,7 +87,7 @@ object SjsonnetMain {
     }
   }
 
-  def rendererForConfig(wr: Writer, config: Config, getCurrentPosition: () => Position) =
+  def rendererForConfig(wr: Writer, config: Config, getCurrentPosition: () => Position): BaseCharRenderer[Writer] =
     if (config.yamlOut.value) new PrettyYamlRenderer(
       wr,
       indent = config.indent,
@@ -122,7 +122,7 @@ object SjsonnetMain {
   }
 
   def renderNormal(config: Config, interp: Interpreter, path: os.Path, wd: os.Path,
-                   getCurrentPosition: () => Position) = {
+                   getCurrentPosition: () => Position): Either[String,String] = {
     writeToFile(config, wd){ writer =>
       val renderer = rendererForConfig(writer, config, getCurrentPosition)
       val res = interp.interpret0(os.read(path), OsPath(path), renderer)
@@ -131,7 +131,7 @@ object SjsonnetMain {
     }
   }
 
-  def isScalar(v: ujson.Value) = !v.isInstanceOf[ujson.Arr] && !v.isInstanceOf[ujson.Obj]
+  def isScalar(v: ujson.Value): Boolean = !v.isInstanceOf[ujson.Arr] && !v.isInstanceOf[ujson.Obj]
 
   def mainConfigured(file: String,
                      config: Config,

@@ -27,7 +27,7 @@ object Importer {
 }
 
 class CachedImporter(parent: Importer) extends Importer {
-  val cache = mutable.HashMap.empty[Path, String]
+  val cache: mutable.HashMap[Path,String] = mutable.HashMap.empty[Path, String]
 
   def resolve(docBase: Path, importName: String): Option[Path] = parent.resolve(docBase, importName)
 

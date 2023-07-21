@@ -32,12 +32,12 @@ abstract class Lazy {
   */
 sealed abstract class Val extends Lazy {
   cached = this // avoid a megamorphic call to compute() when forcing
-  final def compute() = this
+  final def compute(): Val = this
 
   def pos: Position
   def prettyName: String
 
-  def cast[T: ClassTag: PrettyNamed] =
+  def cast[T: ClassTag: PrettyNamed]: T =
     if (implicitly[ClassTag[T]].runtimeClass.isInstance(this)) this.asInstanceOf[T]
     else Error.fail("Expected " + implicitly[PrettyNamed[T]].s + ", found " + prettyName)
 
@@ -68,7 +68,7 @@ object Val{
     override def asBoolean: Boolean = this.isInstanceOf[True]
   }
 
-  def bool(pos: Position, b: Boolean) = if (b) True(pos) else False(pos)
+  def bool(pos: Position, b: Boolean): Bool = if (b) True(pos) else False(pos)
 
   case class True(pos: Position) extends Bool {
     def prettyName = "boolean"
@@ -89,13 +89,13 @@ object Val{
     override def asDouble: Double = value
   }
 
-  class Arr(val pos: Position, private val value: Array[_ <: Lazy]) extends Literal {
+  class Arr(val pos: Position, private val value: Array[? <: Lazy]) extends Literal {
     def prettyName = "array"
     override def asArr: Arr = this
     def length: Int = value.length
-    def force(i: Int) = value(i).force
+    def force(i: Int): Val = value(i).force
 
-    def asLazy(i: Int) = value(i)
+    def asLazy(i: Int): Lazy = value(i)
     def asLazyArray: Array[Lazy] = value.asInstanceOf[Array[Lazy]]
     def asStrictArray: Array[Val] = value.map(_.force)
 
@@ -108,7 +108,7 @@ object Val{
     }
 
     def iterator: Iterator[Val] = value.iterator.map(_.force)
-    def foreach[U](f: Val => U) = {
+    def foreach[U](f: Val => U): Unit = {
       var i = 0
       while(i < value.length) {
         f(value(i).force)
@@ -201,7 +201,7 @@ object Val{
       allKeys
     }
 
-    @inline def hasKeys = !getAllKeys.isEmpty
+    @inline def hasKeys: Boolean = !getAllKeys.isEmpty
 
     @inline def containsKey(k: String): Boolean = getAllKeys.containsKey(k)
 
@@ -241,7 +241,7 @@ object Val{
     def mergeMember(l: Val,
                     r: Val,
                     pos: Position)
-                   (implicit evaluator: EvalScope) = {
+                   (implicit evaluator: EvalScope): Literal = {
       val lStr = l.isInstanceOf[Val.Str]
       val rStr = r.isInstanceOf[Val.Str]
       if(lStr || rStr) {
@@ -326,7 +326,7 @@ object Val{
 
     override def asFunc: Func = this
 
-    def apply(argsL: Array[_ <: Lazy], namedNames: Array[String], outerPos: Position)(implicit ev: EvalScope): Val = {
+    def apply(argsL: Array[? <: Lazy], namedNames: Array[String], outerPos: Position)(implicit ev: EvalScope): Val = {
       val simple = namedNames == null && params.names.length == argsL.length
       val funDefFileScope: FileScope = pos match { case null => outerPos.fileScope case p => p.fileScope }
       //println(s"apply: argsL: ${argsL.length}, namedNames: $namedNames, paramNames: ${params.names.mkString(",")}")
@@ -464,7 +464,7 @@ object Val{
 
     def evalRhs(arg1: Val, ev: EvalScope, pos: Position): Val
 
-    override def apply(argVals: Array[_ <: Lazy], namedNames: Array[String], outerPos: Position)(implicit ev: EvalScope): Val =
+    override def apply(argVals: Array[? <: Lazy], namedNames: Array[String], outerPos: Position)(implicit ev: EvalScope): Val =
       if(namedNames == null && argVals.length == 1) evalRhs(argVals(0).force, ev, outerPos)
       else super.apply(argVals, namedNames, outerPos)
 
@@ -479,7 +479,7 @@ object Val{
 
     def evalRhs(arg1: Val, arg2: Val, ev: EvalScope, pos: Position): Val
 
-    override def apply(argVals: Array[_ <: Lazy], namedNames: Array[String], outerPos: Position)(implicit ev: EvalScope): Val =
+    override def apply(argVals: Array[? <: Lazy], namedNames: Array[String], outerPos: Position)(implicit ev: EvalScope): Val =
       if(namedNames == null && argVals.length == 2)
         evalRhs(argVals(0).force, argVals(1).force, ev, outerPos)
       else super.apply(argVals, namedNames, outerPos)
@@ -495,7 +495,7 @@ object Val{
 
     def evalRhs(arg1: Val, arg2: Val, arg3: Val, ev: EvalScope, pos: Position): Val
 
-    override def apply(argVals: Array[_ <: Lazy], namedNames: Array[String], outerPos: Position)(implicit ev: EvalScope): Val =
+    override def apply(argVals: Array[? <: Lazy], namedNames: Array[String], outerPos: Position)(implicit ev: EvalScope): Val =
       if(namedNames == null && argVals.length == 3)
         evalRhs(argVals(0).force, argVals(1).force, argVals(2).force, ev, outerPos)
       else super.apply(argVals, namedNames, outerPos)

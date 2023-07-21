@@ -4,7 +4,7 @@ import utest._
 import TestUtils.eval
 object StdWithKeyFTests extends TestSuite {
 
-  def tests = Tests {
+  def tests: Tests = Tests {
     test("stdSetMemberWithKeyF") {
       eval("std.setMember(\"a\", [\"a\", \"b\", \"c\"], function(x) x)") ==> ujson.True
       eval("std.setMember(\"a\", [\"a\", \"b\", \"c\"])") ==> ujson.True

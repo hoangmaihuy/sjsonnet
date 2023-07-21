@@ -26,7 +26,7 @@ class Evaluator(resolver: CachedResolver,
   def warn(e: Error): Unit = if(warnLogger != null) warnLogger(e)
 
   def materialize(v: Val): Value = Materializer.apply(v)
-  val cachedImports = collection.mutable.HashMap.empty[Path, Val]
+  val cachedImports: mutable.HashMap[Path,Val] = collection.mutable.HashMap.empty[Path, Val]
 
   def visitExpr(e: Expr)(implicit scope: ValScope): Val = try {
     e match {
@@ -304,7 +304,7 @@ class Evaluator(resolver: CachedResolver,
     )
   }
 
-  def visitAnd(e: And)(implicit scope: ValScope) = {
+  def visitAnd(e: And)(implicit scope: ValScope): Val.Bool = {
     visitExpr(e.lhs) match {
       case _: Val.True =>
         visitExpr(e.rhs) match{
@@ -318,7 +318,7 @@ class Evaluator(resolver: CachedResolver,
     }
   }
 
-  def visitOr(e: Or)(implicit scope: ValScope) = {
+  def visitOr(e: Or)(implicit scope: ValScope): Val.Bool = {
     visitExpr(e.lhs) match {
       case _: Val.True => Val.True(e.pos)
       case _: Val.False =>
@@ -332,7 +332,7 @@ class Evaluator(resolver: CachedResolver,
     }
   }
 
-  def visitInSuper(e: InSuper)(implicit scope: ValScope) = {
+  def visitInSuper(e: InSuper)(implicit scope: ValScope): Val.Bool = {
     val sup = scope.bindings(e.selfIdx+1).asInstanceOf[Val.Obj]
     if(sup == null) Val.False(e.pos)
     else {
@@ -341,7 +341,7 @@ class Evaluator(resolver: CachedResolver,
     }
   }
 
-  def visitBinaryOp(e: BinaryOp)(implicit scope: ValScope) = {
+  def visitBinaryOp(e: BinaryOp)(implicit scope: ValScope): Val.Literal = {
     val l = visitExpr(e.lhs)
     val r = visitExpr(e.rhs)
     val pos = e.pos
@@ -465,7 +465,7 @@ class Evaluator(resolver: CachedResolver,
     }
   }
 
-  def visitMethod(rhs: Expr, params: Params, outerPos: Position)(implicit scope: ValScope) =
+  def visitMethod(rhs: Expr, params: Params, outerPos: Position)(implicit scope: ValScope): Val.Func =
     new Val.Func(outerPos, scope, params) {
       def evalRhs(vs: ValScope, es: EvalScope, fs: FileScope, pos: Position): Val = visitExpr(rhs)(vs)
       override def evalDefault(expr: Expr, vs: ValScope, es: EvalScope) = visitExpr(expr)(vs)

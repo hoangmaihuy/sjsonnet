@@ -13,7 +13,7 @@ class OldYamlRenderer(out: StringWriter = new java.io.StringWriter(), indentArra
   var topLevel = true
 
 
-  val outBuffer = out.getBuffer()
+  val outBuffer: StringBuffer = out.getBuffer()
 
   override def visitString(s: CharSequence, index: Int): StringWriter = {
     flushBuffer()
@@ -35,13 +35,13 @@ class OldYamlRenderer(out: StringWriter = new java.io.StringWriter(), indentArra
       out
     }
   }
-  override def visitFloat64(d: Double, index: Int) = {
+  override def visitFloat64(d: Double, index: Int): StringWriter = {
     flushBuffer()
     out.append(RenderUtils.renderDouble(d))
     out
   }
   val colonSnippet = ": "
-  override def flushBuffer() = {
+  override def flushBuffer(): Unit = {
     if (newlineBuffered) {
       // drop space between colon and newline
       if (outBuffer.length() > 1 && outBuffer.charAt(outBuffer.length() - 1) == ' ') {
@@ -54,7 +54,7 @@ class OldYamlRenderer(out: StringWriter = new java.io.StringWriter(), indentArra
     newlineBuffered = false
     dashBuffered = false
   }
-  override def visitArray(length: Int, index: Int) = new ArrVisitor[StringWriter, StringWriter] {
+  override def visitArray(length: Int, index: Int): ArrVisitor[StringWriter,StringWriter] = new ArrVisitor[StringWriter, StringWriter] {
     var empty = true
     flushBuffer()
 
@@ -84,7 +84,7 @@ class OldYamlRenderer(out: StringWriter = new java.io.StringWriter(), indentArra
       out
     }
   }
-  override def visitJsonableObject(length: Int, index: Int) = new ObjVisitor[StringWriter, StringWriter] {
+  override def visitJsonableObject(length: Int, index: Int): ObjVisitor[StringWriter,StringWriter] = new ObjVisitor[StringWriter, StringWriter] {
     var empty = true
     flushBuffer()
     if (!topLevel) depth += 1

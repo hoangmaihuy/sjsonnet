@@ -4,7 +4,7 @@ import utest._
 import TestUtils.eval
 object PreserveOrderTests extends TestSuite {
 
-  def tests = Tests {
+  def tests: Tests = Tests {
     test("preserveOrder") {
       eval(
         """{

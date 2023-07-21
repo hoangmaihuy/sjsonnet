@@ -21,7 +21,7 @@ class Interpreter(extVars: Map[String, ujson.Value],
                   warnLogger: (String => Unit) = null,
                   ) { self =>
 
-  val resolver = new CachedResolver(importer, parseCache) {
+  val resolver: CachedResolver = new CachedResolver(importer, parseCache) {
     override def process(expr: Expr, fs: FileScope): Either[Error, (Expr, FileScope)] =
       handleException(new StaticOptimizer(evaluator).optimize(expr), fs)
   }

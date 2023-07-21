@@ -47,7 +47,7 @@ object Std {
         case o: Val.Func => o.params.names.length
         case x => Error.fail("Cannot get length of " + x.prettyName)
       })
-    override def specialize(args: Array[Expr]) = args match {
+    override def specialize(args: Array[Expr]): (Val.Builtin, Array[Expr]) = args match {
       case Array(Expr.ApplyBuiltin2(_, Filter, f, a)) => (CountF, Array(f, a))
       case _ => null
     }
@@ -89,7 +89,7 @@ object Std {
   private object ObjectHas extends Val.Builtin2("o", "f") {
     def evalRhs(o: Val, f: Val, ev: EvalScope, pos: Position): Val =
       Val.bool(pos, o.asObj.containsVisibleKey(f.asString))
-    override def specialize(args: Array[Expr]) = args match {
+    override def specialize(args: Array[Expr]): (Val.Builtin, Array[Expr]) = args match {
       case Array(o, s: Val.Str) => (new SpecF(s.value), Array(o))
       case _ => null
     }
@@ -102,7 +102,7 @@ object Std {
   private object ObjectHasAll extends Val.Builtin2("o", "f") {
     def evalRhs(o: Val, f: Val, ev: EvalScope, pos: Position): Val =
       Val.bool(pos, o.asObj.containsKey(f.asString))
-    override def specialize(args: Array[Expr]) = args match {
+    override def specialize(args: Array[Expr]): (Val.Builtin, Array[Expr]) = args match {
       case Array(o, s: Val.Str) => (new SpecF(s.value), Array(o))
       case _ => null
     }
@@ -141,7 +141,7 @@ object Std {
   private object Format_ extends Val.Builtin2("str", "vals") {
     def evalRhs(str: Val, vals: Val, ev: EvalScope, pos: Position): Val =
       new Val.Str(pos, Format.format(str.asString, vals, pos)(ev))
-    override def specialize(args: Array[Expr]) = args match {
+    override def specialize(args: Array[Expr]): (Val.Builtin, Array[Expr]) = args match {
       case Array(str, fmt: Val.Str) =>
         try { (new Format.PartialApplyFmt(fmt.value), Array(str)) } catch { case _: Exception => null }
       case _ => null
@@ -360,7 +360,7 @@ object Std {
   private object StrReplaceAll extends Val.Builtin3("str", "from", "to") {
     def evalRhs(str: Val, from: Val, to: Val, ev: EvalScope, pos: Position): Val =
       Val.Str(pos, str.asString.replaceAll(from.asString, to.asString))
-    override def specialize(args: Array[Expr]) = args match {
+    override def specialize(args: Array[Expr]): (Val.Builtin, Array[Expr]) = args match {
       case Array(str, from: Val.Str, to) =>
         try { (new SpecFrom(Pattern.compile(from.value)), Array(str, to)) } catch { case _: Exception => null }
       case _ => null
@@ -514,7 +514,7 @@ object Std {
 
   private object ExtVar extends Val.Builtin1("x") {
     def evalRhs(_x: Val, ev: EvalScope, pos: Position): Val = {
-      val Val.Str(_, x) = _x
+      val Val.Str(_, x) = _x: @unchecked
       Materializer.reverse(
         pos,
         ev.extVars.getOrElse(x, Error.fail("Unknown extVar: " + x))
@@ -588,8 +588,8 @@ object Std {
   }
 
   private object SetInter extends Val.Builtin3("a", "b", "keyF", Array(null, null, Val.False(dummyPos))) {
-    def isStr(a: Val.Arr) = a.forall(_.isInstanceOf[Val.Str])
-    def isNum(a: Val.Arr) = a.forall(_.isInstanceOf[Val.Num])
+    def isStr(a: Val.Arr): Boolean = a.forall(_.isInstanceOf[Val.Str])
+    def isNum(a: Val.Arr): Boolean = a.forall(_.isInstanceOf[Val.Num])
 
     override def specialize(args: Array[Expr]): (Val.Builtin, Array[Expr]) = args match {
       case Array(a: Val.Arr, b) if isStr(a) => (new Spec1Str(a), Array(b))
@@ -700,8 +700,8 @@ object Std {
         case (l: Val.Obj, r: Val.Obj) =>
           val kvs = for {
             k <- (l.visibleKeyNames ++ r.visibleKeyNames).distinct
-            val lValue = Option(l.valueRaw(k, l, pos)(ev))
-            val rValue = Option(r.valueRaw(k, r, pos)(ev))
+            lValue = Option(l.valueRaw(k, l, pos)(ev))
+            rValue = Option(r.valueRaw(k, r, pos)(ev))
             if !rValue.exists(_.isInstanceOf[Val.Null])
           } yield (lValue, rValue) match{
             case (Some(lChild), None) => k -> createMember{lChild}
@@ -717,7 +717,7 @@ object Std {
         case obj: Val.Obj =>
           val kvs = for{
             k <- obj.visibleKeyNames
-            val value = obj.value(k, pos, obj)(ev)
+            value = obj.value(k, pos, obj)(ev)
             if !value.isInstanceOf[Val.Null]
           } yield (k, createMember{recSingle(value)})
 
@@ -1116,7 +1116,7 @@ object Std {
       val keyF = args(2)
 
       if (keyF.isInstanceOf[Val.False]) {
-        val ujson.Arr(mArr) = Materializer(args(1))(ev)
+        val ujson.Arr(mArr) = Materializer(args(1))(ev): @unchecked
         val mx = Materializer(args(0))(ev)
         mArr.contains(mx)
       } else {
@@ -1165,7 +1165,7 @@ object Std {
     "trace" -> Trace,
     "extVar" -> ExtVar
   )
-  val Std = Val.Obj.mk(
+  val Std: Val.Obj = Val.Obj.mk(
     null,
     functions.toSeq
       .map{
@@ -1235,7 +1235,7 @@ object Std {
     }
   }
 
-  def uniqArr(pos: Position, ev: EvalScope, arr: Val, keyF: Val) = {
+  def uniqArr(pos: Position, ev: EvalScope, arr: Val, keyF: Val): Val.Arr = {
     val arrValue = arr match {
       case arr: Val.Arr => arr.asLazyArray
       case str: Val.Str => stringChars(pos, str.value).asLazyArray
@@ -1272,7 +1272,7 @@ object Std {
     new Val.Arr(pos, out.toArray)
   }
 
-  def sortArr(pos: Position, ev: EvalScope, arr: Val, keyF: Val) = {
+  def sortArr(pos: Position, ev: EvalScope, arr: Val, keyF: Val): Val.Arr = {
     arr match{
       case vs: Val.Arr =>
         new Val.Arr(

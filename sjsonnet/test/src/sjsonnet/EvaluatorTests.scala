@@ -4,7 +4,7 @@ import utest._
 import TestUtils.eval
 object EvaluatorTests extends TestSuite{
 
-  def evalErr(s: String, strict: Boolean = false) = {
+  def evalErr(s: String, strict: Boolean = false): String = {
     try {
       val x = eval(s, strict = strict)
       throw new Exception (s"Expected exception, got result: $x")
@@ -12,7 +12,7 @@ object EvaluatorTests extends TestSuite{
       e.getMessage.split('\n').map(_.trim).mkString("\n") // normalize inconsistent indenation on JVM vs JS
     }
   }
-  def tests = Tests{
+  def tests: Tests = Tests{
     test("arithmetic") {
       eval("1 + 2 + 3") ==> ujson.Num(6)
       eval("1 + 2 * 3") ==> ujson.Num(7)

@@ -15,7 +15,7 @@ import upickle.core.{ArrVisitor, ObjVisitor}
 class Renderer(out: Writer = new java.io.StringWriter(),
                indent: Int = -1) extends BaseCharRenderer(out, indent){
   var newlineBuffered = false
-  override def visitFloat64(d: Double, index: Int) = {
+  override def visitFloat64(d: Double, index: Int): Writer = {
     val s = RenderUtils.renderDouble(d)
     flushBuffer()
     var i = 0
@@ -28,7 +28,7 @@ class Renderer(out: Writer = new java.io.StringWriter(),
     flushCharBuilder()
     out
   }
-  override def flushBuffer() = {
+  override def flushBuffer(): Unit = {
     if (commaBuffered) {
       elemBuilder.append(',')
       if (indent == -1) elemBuilder.append(' ')
@@ -46,7 +46,7 @@ class Renderer(out: Writer = new java.io.StringWriter(),
     newlineBuffered = false
     commaBuffered = false
   }
-  override def visitArray(length: Int, index: Int) = new ArrVisitor[Writer, Writer] {
+  override def visitArray(length: Int, index: Int): ArrVisitor[Writer,Writer] = new ArrVisitor[Writer, Writer] {
     var empty = true
     flushBuffer()
     elemBuilder.append('[')
@@ -72,7 +72,7 @@ class Renderer(out: Writer = new java.io.StringWriter(),
     }
   }
 
-  override def visitJsonableObject(length: Int, index: Int) = new ObjVisitor[Writer, Writer] {
+  override def visitJsonableObject(length: Int, index: Int): ObjVisitor[Writer,Writer] = new ObjVisitor[Writer, Writer] {
     var empty = true
     flushBuffer()
     elemBuilder.append('{')
@@ -107,7 +107,7 @@ class Renderer(out: Writer = new java.io.StringWriter(),
 class PythonRenderer(out: Writer = new java.io.StringWriter(),
                      indent: Int = -1) extends BaseCharRenderer(out, indent){
 
-  override def visitNull(index: Int) = {
+  override def visitNull(index: Int): Writer = {
     flushBuffer()
     elemBuilder.ensureLength(4)
     elemBuilder.appendUnsafe('N')
@@ -118,7 +118,7 @@ class PythonRenderer(out: Writer = new java.io.StringWriter(),
     out
   }
 
-  override def visitFalse(index: Int) = {
+  override def visitFalse(index: Int): Writer = {
     flushBuffer()
     elemBuilder.ensureLength(5)
     elemBuilder.appendUnsafe('F')
@@ -130,7 +130,7 @@ class PythonRenderer(out: Writer = new java.io.StringWriter(),
     out
   }
 
-  override def visitTrue(index: Int) = {
+  override def visitTrue(index: Int): Writer = {
     flushBuffer()
     elemBuilder.ensureLength(4)
     elemBuilder.appendUnsafe('T')
@@ -141,7 +141,7 @@ class PythonRenderer(out: Writer = new java.io.StringWriter(),
     out
   }
 
-  override def visitJsonableObject(length: Int, index: Int) = new ObjVisitor[Writer, Writer] {
+  override def visitJsonableObject(length: Int, index: Int): ObjVisitor[Writer,Writer] = new ObjVisitor[Writer, Writer] {
     flushBuffer()
     elemBuilder.append('{')
     depth += 1
@@ -166,7 +166,7 @@ class PythonRenderer(out: Writer = new java.io.StringWriter(),
     }
   }
 
-  override def flushBuffer() = {
+  override def flushBuffer(): Unit = {
     if (commaBuffered) {
       commaBuffered = false
       elemBuilder.ensureLength(2)
@@ -181,7 +181,7 @@ class PythonRenderer(out: Writer = new java.io.StringWriter(),
 case class MaterializeJsonRenderer(indent: Int = 4, escapeUnicode: Boolean = false, out: StringWriter = new StringWriter())
   extends BaseCharRenderer(out, indent, escapeUnicode) {
 
-  override def visitArray(length: Int, index: Int) = new ArrVisitor[StringWriter, StringWriter] {
+  override def visitArray(length: Int, index: Int): ArrVisitor[StringWriter,StringWriter] = new ArrVisitor[StringWriter, StringWriter] {
     flushBuffer()
     elemBuilder.append('[')
 
@@ -203,7 +203,7 @@ case class MaterializeJsonRenderer(indent: Int = 4, escapeUnicode: Boolean = fal
     }
   }
 
-  override def visitJsonableObject(length: Int, index: Int) = new ObjVisitor[StringWriter, StringWriter] {
+  override def visitJsonableObject(length: Int, index: Int): ObjVisitor[StringWriter,StringWriter] = new ObjVisitor[StringWriter, StringWriter] {
     flushBuffer()
     elemBuilder.append('{')
     depth += 1

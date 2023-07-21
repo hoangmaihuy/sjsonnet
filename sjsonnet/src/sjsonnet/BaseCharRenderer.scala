@@ -12,7 +12,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
  escapeUnicode: Boolean = false) extends JsVisitor[T, T]{
   protected[this] val elemBuilder = new upickle.core.CharBuilder
   protected[this] val unicodeCharBuilder = new upickle.core.CharBuilder()
-  def flushCharBuilder() = {
+  def flushCharBuilder(): Unit = {
     elemBuilder.writeOutToIfLongerThan(out, if (depth == 0) 0 else 1000)
   }
 
@@ -23,7 +23,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
   protected[this] var commaBuffered = false
   protected[this] var quoteBuffered = false
 
-  def flushBuffer() = {
+  def flushBuffer(): Unit = {
     if (commaBuffered) {
       commaBuffered = false
       elemBuilder.append(',')
@@ -35,7 +35,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
     }
   }
 
-  def visitArray(length: Int, index: Int) = new ArrVisitor[T, T] {
+  def visitArray(length: Int, index: Int): ArrVisitor[T,T] = new ArrVisitor[T, T] {
     flushBuffer()
     elemBuilder.append('[')
 
@@ -56,7 +56,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
     }
   }
 
-  def visitJsonableObject(length: Int, index: Int) = new ObjVisitor[T, T] {
+  def visitJsonableObject(length: Int, index: Int): ObjVisitor[T,T] = new ObjVisitor[T, T] {
     flushBuffer()
     elemBuilder.append('{')
     depth += 1
@@ -86,7 +86,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
     }
   }
 
-  def visitNull(index: Int) = {
+  def visitNull(index: Int): T = {
     flushBuffer()
     elemBuilder.ensureLength(4)
     elemBuilder.appendUnsafe('n')
@@ -97,7 +97,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
     out
   }
 
-  def visitFalse(index: Int) = {
+  def visitFalse(index: Int): T = {
     flushBuffer()
     elemBuilder.ensureLength(5)
     elemBuilder.appendUnsafe('f')
@@ -109,7 +109,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
     out
   }
 
-  def visitTrue(index: Int) = {
+  def visitTrue(index: Int): T = {
     flushBuffer()
     elemBuilder.ensureLength(4)
     elemBuilder.appendUnsafe('t')
@@ -120,7 +120,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
     out
   }
 
-  def visitFloat64StringParts(s: CharSequence, decIndex: Int, expIndex: Int, index: Int) = {
+  def visitFloat64StringParts(s: CharSequence, decIndex: Int, expIndex: Int, index: Int): T = {
     flushBuffer()
     elemBuilder.ensureLength(s.length())
     var i = 0
@@ -133,7 +133,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
     out
   }
 
-  override def visitFloat32(d: Float, index: Int) = {
+  override def visitFloat32(d: Float, index: Int): T = {
     d match{
       case Float.PositiveInfinity => visitNonNullString("Infinity", -1)
       case Float.NegativeInfinity => visitNonNullString("-Infinity", -1)
@@ -148,7 +148,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
     out
   }
 
-  override def visitFloat64(d: Double, index: Int) = {
+  override def visitFloat64(d: Double, index: Int): T = {
     d match{
       case Double.PositiveInfinity => visitNonNullString("Infinity", -1)
       case Double.NegativeInfinity => visitNonNullString("-Infinity", -1)
@@ -163,13 +163,13 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
     out
   }
 
-  def visitString(s: CharSequence, index: Int) = {
+  def visitString(s: CharSequence, index: Int): T = {
 
     if (s eq null) visitNull(index)
     else visitNonNullString(s, index)
   }
 
-  def visitNonNullString(s: CharSequence, index: Int) = {
+  def visitNonNullString(s: CharSequence, index: Int): T = {
     flushBuffer()
 
     upickle.core.RenderUtils.escapeChar(
@@ -180,7 +180,7 @@ class BaseCharRenderer[T <: upickle.core.CharOps.Output]
     out
   }
 
-  final def renderIndent() = {
+  final def renderIndent(): Unit = {
     if (indent == -1) ()
     else {
       var i = indent * depth

@@ -1,7 +1,8 @@
 package sjsonnet
 
+import ujson.Value
 object TestUtils {
-  def eval(s: String, preserveOrder: Boolean = false, strict: Boolean = false) = {
+  def eval(s: String, preserveOrder: Boolean = false, strict: Boolean = false): Value = {
     new Interpreter(
       Map(),
       Map(),

@@ -4,7 +4,7 @@ import utest._
 import TestUtils.eval
 object StdMergePatchTests extends TestSuite {
 
-  def tests = Tests {
+  def tests: Tests = Tests {
     test {
       eval("std.mergePatch([{a: 1}], [{b: 2}])") ==> ujson.Arr(ujson.Obj("b" -> 2))
     }

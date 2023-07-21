@@ -10,19 +10,19 @@ sealed abstract class ReadWriter[T] {
 object ReadWriter{
   implicit object StringRead extends ReadWriter[String]{
     def apply(t: Val) = t.asString
-    def write(pos: Position, t: String) = Val.Str(pos, t)
+    def write(pos: Position, t: String): Val.Str = Val.Str(pos, t)
   }
   implicit object BooleanRead extends ReadWriter[Boolean]{
     def apply(t: Val) = t.asBoolean
-    def write(pos: Position, t: Boolean) = Val.bool(pos, t)
+    def write(pos: Position, t: Boolean): Val.Bool = Val.bool(pos, t)
   }
   implicit object IntRead extends ReadWriter[Int]{
     def apply(t: Val) = t.asInt
-    def write(pos: Position, t: Int) = Val.Num(pos, t)
+    def write(pos: Position, t: Int): Val.Num = Val.Num(pos, t)
   }
   implicit object DoubleRead extends ReadWriter[Double]{
     def apply(t: Val) = t.asDouble
-    def write(pos: Position, t: Double) = Val.Num(pos, t)
+    def write(pos: Position, t: Double): Val.Num = Val.Num(pos, t)
   }
   implicit object ValRead extends ReadWriter[Val]{
     def apply(t: Val) = t

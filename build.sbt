@@ -1,12 +1,12 @@
 val sjsonnetVersion = "0.4.4"
 
-scalaVersion in Global := "2.13.10"
+scalaVersion in Global := "3.3.0"
 
 cancelable in Global := true
 
 lazy val main = (project in file("sjsonnet"))
   .settings(
-    scalacOptions in Compile ++= Seq("-opt:l:inline", "-opt-inline-from:sjsonnet.*,sjsonnet.**"),
+    scalacOptions in Compile ++= Seq(),
     fork in Test := true,
     baseDirectory in Test := (baseDirectory in ThisBuild).value,
     libraryDependencies ++= Seq(

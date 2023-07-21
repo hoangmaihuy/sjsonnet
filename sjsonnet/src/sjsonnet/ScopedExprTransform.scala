@@ -11,7 +11,7 @@ class ScopedExprTransform extends ExprTransform {
   var scope: Scope = emptyScope
 
   // Marker for Exprs in the scope that should not be used because they need to be evaluated in a different scope
-  val dynamicExpr = new Expr { def pos: Position = ???; override def toString = "dynamicExpr" }
+  val dynamicExpr: Expr = new Expr { def pos: Position = ???; override def toString = "dynamicExpr" }
 
   def transform(e: Expr): Expr = e match {
     case LocalExpr(pos, bindings, returned) =>
@@ -39,12 +39,12 @@ class ScopedExprTransform extends ExprTransform {
         (transform(key), nestedBindings(dynamicExpr, dynamicExpr, preLocals ++ postLocals) {
           (transformBinds(preLocals), transformBinds(postLocals), transform(value))
         })
-      })
+      }): @unchecked
       if((f2 eq first) && (k2 eq key) && (v2 eq value) && (pre2 eq preLocals) && (post2 eq postLocals) && (r2, rest).zipped.forall(_ eq _)) e
       else ObjComp(pos, pre2, k2, v2, post2, f2.asInstanceOf[ForSpec], r2)
 
     case Comp(pos, value, first, rest) =>
-      val (f2 :: r2, v2) = compSpecs(first :: rest.toList, () => transform(value))
+      val (f2 :: r2, v2) = compSpecs(first :: rest.toList, () => transform(value)): @unchecked
       if((f2 eq first) && (v2 eq value) && (r2, rest).zipped.forall(_ eq _)) e
       else Comp(pos, v2, f2.asInstanceOf[ForSpec], r2.toArray)
 

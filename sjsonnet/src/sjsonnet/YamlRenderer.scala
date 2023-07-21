@@ -16,7 +16,7 @@ class YamlRenderer(_out: StringWriter = new java.io.StringWriter(), indentArrayI
 
   private val outBuffer = _out.getBuffer()
 
-  override def flushCharBuilder() = {
+  override def flushCharBuilder(): Unit = {
     elemBuilder.writeOutToIfLongerThan(_out, if (depth <= 0 || topLevel) 0 else 1000)
   }
 
@@ -54,14 +54,14 @@ class YamlRenderer(_out: StringWriter = new java.io.StringWriter(), indentArrayI
     _out
   }
 
-  override def visitFloat64(d: Double, index: Int) = {
+  override def visitFloat64(d: Double, index: Int): StringWriter = {
     flushBuffer()
     appendString(RenderUtils.renderDouble(d))
     flushCharBuilder()
     _out
   }
 
-  override def flushBuffer() = {
+  override def flushBuffer(): Unit = {
     if (newlineBuffered) {
       // drop space between colon and newline
       elemBuilder.writeOutToIfLongerThan(_out, 0)
@@ -81,7 +81,7 @@ class YamlRenderer(_out: StringWriter = new java.io.StringWriter(), indentArrayI
     dashBuffered = false
   }
 
-  override def visitArray(length: Int, index: Int) = new ArrVisitor[StringWriter, StringWriter] {
+  override def visitArray(length: Int, index: Int): ArrVisitor[StringWriter,StringWriter] = new ArrVisitor[StringWriter, StringWriter] {
     var empty = true
     flushBuffer()
 
@@ -116,7 +116,7 @@ class YamlRenderer(_out: StringWriter = new java.io.StringWriter(), indentArrayI
       _out
     }
   }
-  override def visitJsonableObject(length: Int, index: Int) = new ObjVisitor[StringWriter, StringWriter] {
+  override def visitJsonableObject(length: Int, index: Int): ObjVisitor[StringWriter,StringWriter] = new ObjVisitor[StringWriter, StringWriter] {
     var empty = true
     flushBuffer()
     if (!topLevel) depth += 1
@@ -155,9 +155,9 @@ class YamlRenderer(_out: StringWriter = new java.io.StringWriter(), indentArrayI
   }
 }
 object YamlRenderer{
-  val newlinePattern = Pattern.compile("\n")
+  val newlinePattern: Pattern = Pattern.compile("\n")
 
-  def writeIndentation(out: upickle.core.CharBuilder, n: Int) = {
+  def writeIndentation(out: upickle.core.CharBuilder, n: Int): Unit = {
     out.ensureLength(n+1)
     out.append('\n')
     var i = n

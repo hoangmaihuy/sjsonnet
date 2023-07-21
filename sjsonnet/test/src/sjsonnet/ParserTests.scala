@@ -4,11 +4,11 @@ import Expr._
 import fastparse.Parsed
 import Val.{True, Num}
 object ParserTests extends TestSuite{
-  def parse(s: String) = fastparse.parse(s, new Parser(null).document(_)).get.value._1
-  def parseErr(s: String) = fastparse.parse(s, new Parser(null).document(_), verboseFailures = true).asInstanceOf[Parsed.Failure].msg
+  def parse(s: String): Expr = fastparse.parse(s, new Parser(null).document(_)).get.value._1
+  def parseErr(s: String): String = fastparse.parse(s, new Parser(null).document(_), verboseFailures = true).asInstanceOf[Parsed.Failure].msg
   val dummyFS = new FileScope(null)
   def pos(i: Int) = new Position(dummyFS, i)
-  def tests = Tests{
+  def tests: Tests = Tests{
     test("hello") {
       parse("true") ==> True(pos(0))
 
